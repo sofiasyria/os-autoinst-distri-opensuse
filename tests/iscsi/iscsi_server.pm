@@ -27,7 +27,7 @@ use strict;
 use warnings;
 use testapi;
 use lockapi qw(mutex_create mutex_wait);
-use version_utils qw(is_sle is_leap);
+use version_utils qw(is_sle is_leap is_opensuse);
 use mmapi qw(get_children wait_for_children);
 use utils qw(zypper_call systemctl type_string_slow_extended);
 use yast2_widget_utils 'change_service_configuration';
@@ -99,7 +99,7 @@ sub config_2way_authentication {
     assert_screen 'iscsi-target-modify-acls';
     send_key 'alt-a';
     assert_screen 'iscsi-target-modify-acls-initiator-popup';
-    if (is_sle('>=15')) {
+    if (is_sle('>=15') || is_opensuse) {
         send_key 'alt-i';
     } else {
         send_key_until_needlematch 'iscsi-client-name-selected', 'tab';
@@ -111,7 +111,7 @@ sub config_2way_authentication {
     assert_screen 'iscsi-target-modify-acls-authentication';
     # initiator & target credential fields are swapped in sle12 and sle15
     my %key_shortcuts;
-    if (is_sle('>=15')) {
+    if (is_sle('>=15') || is_opensuse) {
         $key_shortcuts{enable_auth_init}   = 'alt-h';
         $key_shortcuts{auth_init_user}     = 'alt-m';
         $key_shortcuts{auth_init_pass}     = 'alt-t';
@@ -136,7 +136,7 @@ sub config_2way_authentication {
     send_key $key_shortcuts{auth_init_pass};
     my $init_pass = reverse $test_data->{common}->{password};
     type_string_slow_extended($init_pass);
-    assert_screen 'iscsi-target-acl-auth-initiator-pass' if is_sle('>=15');
+    assert_screen 'iscsi-target-acl-auth-initiator-pass' if (is_sle('>=15') || is_opensuse);
     send_key $key_shortcuts{enable_auth_target};
     assert_screen 'iscsi-target-acl-auth-target-enable-auth';
     send_key $key_shortcuts{auth_target_user};
@@ -144,11 +144,11 @@ sub config_2way_authentication {
     assert_screen 'iscsi-target-acl-auth-target-username';
     send_key $key_shortcuts{auth_target_pass};
     type_string_slow_extended $test_data->{common}->{password};
-    assert_screen 'iscsi-target-acl-auth-target-pass' if is_sle('>=15');
+    assert_screen 'iscsi-target-acl-auth-target-pass' if (is_sle('>=15') || is_opensuse);
     send_key 'alt-o';
     assert_screen 'iscsi-target-modify-acls';
     send_key 'alt-n';
-    if (is_sle('>=15')) {
+    if (is_sle('>=15') || is_opensuse) {
         assert_screen 'iscsi-target-acl-warning';
         send_key 'alt-y';
     }
@@ -173,7 +173,7 @@ sub target_backstore_tab {
     # un-check bind all IPs
     # explicitly check use authentication only on sle15
     # checked by default in sle12
-    if (is_sle('>=15')) {
+    if (is_sle('>=15') || is_opensuse) {
         wait_still_screen(stilltime => 1, timeout => 5, similarity_level => 45);
         send_key 'alt-l';
         wait_still_screen(stilltime => 1, timeout => 5, similarity_level => 45);
@@ -219,7 +219,7 @@ sub run {
     wait_serial("$module_name-0", 180) || die "'yast2 iscsi-lio-server' didn't finish or exited with non-zero code";
     # verify systemd services after configuration
     record_info 'Systemd - after', 'Verify status of iscsi services and sockets';
-    my $service = (is_sle('>=15') ? 'targetcli.service' : 'target.service');
+    my $service = ((is_sle('>=15') || is_opensuse) ? 'targetcli.service' : 'target.service');
     systemctl("is-active $service");
     # create mutex for child job -> triggers start of initiator configuration
     # setup is done client can connect

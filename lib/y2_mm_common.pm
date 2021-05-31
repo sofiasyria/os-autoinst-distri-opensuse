@@ -11,6 +11,8 @@ use Exporter 'import';
 use testapi;
 use mm_tests 'configure_static_network';
 use x11utils 'turn_off_gnome_screensaver';
+use version_utils 'is_opensuse';
+use utils 'systemctl';
 
 our @EXPORT = qw(prepare_xterm_and_setup_static_network);
 
@@ -29,6 +31,10 @@ sub prepare_xterm_and_setup_static_network {
     x11_start_program('xterm -geometry 160x45+5+5', target_match => 'xterm');
     turn_off_gnome_screensaver;
     become_root;
+    if (is_opensuse && !check_var('DESKTOP', 'textmode')) {
+        systemctl("disable NetworkManager --now");
+        systemctl("enable wicked --now");
+    }
     record_info 'Network', $args{message} if defined($args{message});
     configure_static_network($args{ip});
 }
