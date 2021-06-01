@@ -115,7 +115,8 @@ sub run {
     # it takes a moment, since udev actually handles it
     sleep 5;
     script_run("save_y2logs");
-    upload_asset("/tmp/y2log*");
+    my $name = script_output("ls /tmp/y2log*");
+    upload_asset("$name");
     record_info 'Systemd', 'Verify status of iscsi services and sockets';
     systemctl("is-active iscsid.service");
     systemctl("is-active iscsid.socket");
