@@ -110,10 +110,12 @@ sub run {
     initiator_service_tab;
     initiator_discovered_targets_tab;
     initiator_connected_targets_tab;
-    wait_serial("yast2-iscsi-client-status-0", 180) || die "'yast2 iscsi-client ' didn't finish or exited with non-zero code";
+    #wait_serial("yast2-iscsi-client-status-0", 180) || die "'yast2 iscsi-client ' didn't finish or exited with non-zero code";
     # logging in to a target will create a local disc device
     # it takes a moment, since udev actually handles it
     sleep 5;
+    script_run("save_y2logs");
+    upload_asset("/tmp/y2log*");
     record_info 'Systemd', 'Verify status of iscsi services and sockets';
     systemctl("is-active iscsid.service");
     systemctl("is-active iscsid.socket");
