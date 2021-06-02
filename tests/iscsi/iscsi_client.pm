@@ -114,9 +114,8 @@ sub run {
     # logging in to a target will create a local disc device
     # it takes a moment, since udev actually handles it
     sleep 5;
-    script_run("save_y2logs");
-    my $name = script_output("ls /tmp/y2log*");
-    upload_asset("$name");
+    script_run("journalctl -xe > journal_logs");
+    upload_asset("journal_logs");
     record_info 'Systemd', 'Verify status of iscsi services and sockets';
     systemctl("is-active iscsid.service");
     systemctl("is-active iscsid.socket");
